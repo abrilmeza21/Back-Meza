@@ -11,7 +11,7 @@
     <div class="inicio">
         <div class="container m-3 ">
             <div class="jumbotron jumbotron-fluid">
-                    <form action="/api/products/" method="POST">
+                    <form action="/api/products" method="POST" enctype="multipart/form-data">
                         <div class="forminputs">
                             <div><label for="Title">Titulo <br></label><input name="title" type="text"></div>
                             <div><label for="Description">Descripcion <br></label><input name="description" type="text"></div>
@@ -19,8 +19,8 @@
                             <div><label for="Price">$ Precio <br></label><input type="number" name="price"></div>
                             <div><label for="Stock"> stock <br></label><input type="number" name="stock"></div>
                             <div><label for="Category"> Categoria <br></label><input type="text" name="category" id="category">
-                            <div><label for="Thumbnail">Imagen link <br></label><input type="text" name="thumbnail"></div>
-                            <button class="btn">Enviar</button>
+                            <div><label for="Thumbnail">Imagen link <br></label><input type="file" name="file"></div>
+                            <button class="btn" input type="submit"> Agregar Producto</button>
                         </div>
                     </form>
             </div>

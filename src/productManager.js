@@ -9,12 +9,12 @@ export class ProductManager {
     async getProducts(limit){
         try {
             if(fs.existsSync(this.path)){
-                const prod = await fs.promises.readFile(this.path, 'utf-8')
+                const infoProd = await fs.promises.readFile(this.path, 'utf-8')
                 if(limit === 'max'){
-                    console.log(prod)
-                    return JSON.parse(prod)
+                    console.log(infoProd)
+                    return JSON.parse(infoProd)
                 }else{
-                return JSON.parse(prod).slice(0, limit)
+                return JSON.parse(infoProd).slice(0, limit)
                 }
             } else {
                 return []
@@ -25,34 +25,32 @@ export class ProductManager {
     }
 
 
-    async addProduct(title, description, price, thumbnail, code, stock) {
+    async addProduct(producto) {
+        const {title,description,code,price,stock,category,thumbnail,status} = producto
         try {
-            if(!title || !description || !price || !thumbnail || !code || !stock) {
+            if(!title || !description || !price || !code || !stock || !category) {
                 return console.log('Error, completar todos los campos');
             } else {
-                let prod = await this.getProducts();
-                let checkCode = prod.find(product => product.code === code)
-                if(checkCode){
-                    console.log('El código ingresado ya existe')
-                }else {
-                    let numId = 0;
-                    if(prod.length>0){
-                        numId = prod.length+1;
-                    } else{
-                        numId = 1;
-                    }
-                    const product = {
-                        id : numId,
-                        title,
-                        description,
-                        price,
-                        thumbnail,
-                        code,
-                        stock,
-                    }
+                const prod = await this.getProducts();
+                const checkCode = prod.find(product => product.code === code)
+                    if(checkCode){
+                        console.log('El código ingresado ya existe')
+                    }else {
+                        const product = {
+                            id : await this.#numberId() ,
+                            title,
+                            description,
+                            price,
+                            thumbnail: [],
+                            code,
+                            stock,
+                            category,
+                            status: true,
+                        }
                     prod.push(product)
                     await fs.promises.writeFile(this.path, JSON.stringify(prod))
-                    return console.log('Producto cargado correctamente' + product)
+                    return console.log(product),
+                    console.log('Producto cargado correctamente')
                 } 
             }
         } catch(error) {
@@ -63,14 +61,10 @@ export class ProductManager {
     async getProductById(idProduct){
         try {
         let prod = await this.getProducts();
-        const findId = prod.find((p)=>p.id===parseInt(idProduct))
-            if(findId){
-            return console.log(findId)
-            } else {
-            console.log('Producto con el id ingresado no es correcto')
-            }
+        const findId =  prod.find( (p) => p.id === idProduct)
+                return findId
         } catch(error) {
-        console.log(error)
+        return console.log('Producto con el id ingresado no es correcto')
     }
 }
 
@@ -88,7 +82,8 @@ export class ProductManager {
             prod = JSON.stringify(prod, null, 2)
             await fs.promises.writeFile(this.path, prod)
             console.log(JSON.parse(prod))
-            return console.log('Producto editado correctamente'+ prod)
+            console.log('Producto editado correctamente')
+            return console.log(prod)
         }else{
             return console.log('No se pudo editar el producto'+ null)
         }
@@ -99,16 +94,26 @@ export class ProductManager {
 
     async deleteProduct(idProduct){
         try{
-        let prod = await this.getProducts();
-        let product = await this.getProductById(id)
-            if(product){
-                const filtrado =prod.filter(produ => produ.id != idProduct)
-                await fs.promises.writeFile(this.path, JSON.stringify(filtrado, null, 2))
-                return console.log('Producto eliminado correctamente'+ filtrado)
-            }
+            let prod = await this.getProducts();
+            const indexProd = prod.findIndex((u) => u.id === idProduct)
+                if (indexProd === -1) throw new Error('Producto no encontrado')
+                prod.splice(indexProd,1)
+                await fs.promises.writeFile(this.path, JSON.stringify(prod))
+                return idProduct
         }catch(error) {
-            console.log('Np se pudo eliminar el producto'+ error)
+            return error
         }
     }
+
+    async #numberId() {
+        const prod = await this.getProducts()
+        let id =
+            prod.length === 0
+            ? 1
+            : prod[prod.length - 1].id + 1
+        return id
+    }
+
+
 }
 

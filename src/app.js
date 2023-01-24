@@ -1,7 +1,7 @@
-import express from 'express'
-import productsRouter from '../routes/productsRouter.js'
-import cartRouter from '../routes/cartRouter.js'
 import { __dirname } from '../utils.js'
+import cartRouter from '../routes/cartRouter.js'
+import express from 'express'
+import productRouter from '../routes/productRouter.js'
 
 const app = express()
 
@@ -10,7 +10,7 @@ app.use(express.urlencoded({extended:true}))
 app.use(express.static(__dirname+'/public'))
 
 
-app.use('/api/products', productsRouter)
+app.use('/api/products', productRouter)
 app.use('/api/cart', cartRouter)
 
 app.get('/',(req,res)=>{

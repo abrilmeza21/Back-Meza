@@ -1,9 +1,6 @@
 import fs from 'fs';
 
-
 export class CartManager {
-
-
     constructor(path){
         this.path = path;
     }
@@ -12,34 +9,36 @@ export class CartManager {
     async getCarts(limit){
         try{
             if(fs.existsSync(this.path)){
-                const infoCarts = await fs.promises.readFile(this.path, 'utf-8');
+                const infoCarts = await fs.promises.readFile(this.path);
                 if(limit === 'max'){
+                    console.log(infoCarts)
                     return JSON.parse(infoCarts);
                 }else{
                     return JSON.parse(infoCarts).slice(0,limit);
                 }
-            }else{
+            }else {
                 return [];
             }
         }catch(error){
-            console.log(error);
-            return error;
+            console.log("Error en la lectura del archivo" + error);
         }
     }
 
 
-    async addCart(products){
+
+    async addCart(producto){
         try{
-            const cart ={
-                id: await this.#cartId(),
-                products:[products]
-            }
             const cartFile = await this.getCarts();
+            const cart = {
+                id: await this.#cartId(),
+                products:[producto]
+            }
             cartFile.push(cart);
-            await fs.promises.writeFile(this.path,JSON.stringify(cartFile, null, 2))
+            await fs.promises.writeFile(this.path,JSON.stringify(cartFile))
+            return console.log(cart),
+            console.log('Carrito cargado correctamente')
         }catch(error){
             console.log(error);
-            return error
         }
     }
 
@@ -49,58 +48,52 @@ export class CartManager {
         try {
             const cartFile = await this.getCarts();
             const cart = cartFile.find((c) => c.id === parseInt(idCart));
-            if(cart){
-                console.log(cart)
                 return cart;
-            } else{
-                console.log('Carrito con el id ingresado no es correcto')
-            }
         } catch (error) {
-            console.log(error)
-            return error
+            return console.log('Carrito con el id ingresado no es correcto')
         }
     }
 
 
-    async updateCart(idCart, change){
+    async updateCart(idCart, cambio){
+        try{
         const cartFile = await this.getCarts();
         let foundCart = await this.getCartById(idCart)
         if(foundCart){
-            foundCart = {...foundCart, ...change};
+            foundCart = {...foundCart, ...cambio};
                 cartFile = cartFile.map(cart => {
                 if(cart.id == foundCart.id){
-                    cart = foundCart
-                }
-                return cart
+                    cart = foundCart}
+                    return cart
             })
             cartFile = JSON.stringify(cartFile, null, 2)
             await fs.promises.writeFile(this.path, cartFile)
             console.log(JSON.parse(cartFile))
-            return cartFile
+            console.log('Carrito editado correctamente')
+            return console.log(cartFile)
         }else{
-            console.log('Carrito no encontrado');
-            return error
+            return console.log('Carrito no encontrado');
         }
+        }catch(error) {
+            console.log(error)
+        }  
     }
 
     async deleteCart(idCart){
         try {
             let cartFile = await this.getCarts()
-            let cart = await this.getCartById(idCart)
-            if(cart){
-                const filtrado = cartFile.filter(c => c.id != idCart)
-                await fs.promises.writeFile(this.path, JSON.stringify(filtrado, null, 2))
-                return filtrado
-            }
-        } catch (error) {
-            console.log(error)
-            return error
-        }
+            const indexCart = cartFile.findIndex((u) => u.id === idCart)
+            if (indexCart === -1) throw new Error('Carrito no encontrado')
+            cartFile.splice(indexCart,1)
+            await fs.promises.writeFile(this.path, JSON.stringify(cartFile))
+            return idCart
+    }catch(error) {
+        return error
     }
+}
 
 
-
-    async addProductToCartById(idCart,idProduct,quantity){
+    async addProductToCartById(idCart, idProduct, quantity){
         const cartFile = await this.getCarts();
         const cart = cartFile.find((c) => c.id === parseInt(idCart));
         if (cart === undefined)  return console.log("No encontrado")
@@ -126,15 +119,13 @@ export class CartManager {
     }
 
 
-
     async #cartId(){
-        const cart = await this.getCarts()
-        let numId = 0;
-        if(cart.length>0){
-            numId = cart.length+1;
-        } else{
-            numId = 1;
-        }
-    }
+        const cart = await this.getCarts();
+        let id =
+        cart.length === 0
+            ? 1
+            : cart[cart.length - 1].id + 1
+    return id
+}
 
 }

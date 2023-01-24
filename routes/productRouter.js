@@ -1,9 +1,11 @@
-import { Router } from 'express'
 import {ProductManager} from '../src/productManager.js'
+import { Router } from 'express'
+import { __dirname } from '../utils.js'
+import path from 'path'
 import { upload } from '../middlewares/multer.js'
 
 const productRouter = Router()
-const productManager = new ProductManager('../src/files/products.json') 
+const productManager = new ProductManager(path.join(__dirname,'src/files/products.json')) 
 
 
 productRouter.get('/',async(req,res)=>{
@@ -18,35 +20,31 @@ productRouter.get('/',async(req,res)=>{
 })
 
 productRouter.get('/:idProduct',async(req,res)=>{
-    const {idProduct} = req.params
-    console.log(idProduct)
     try {
-        const product = await productManager.getProductById(idProduct)
-        console.log(product)
+        const {idProduct} = req.params
+        const product = await productManager.getProductById(parseInt(idProduct))
         if(product){
-            res.json({product})
-    }else{
-        res.send('Producto no encontrado')
+            res.json({message:'Usuario encontrado con exito', product})
+        } else {
+        return (error)
+        }
+    } catch (error) {
+        res.send(error)
     }
-} catch (error) {
-    res.send(error)
-}
 })
 
 
 productRouter.post('/', upload.single('file'), async(req, res) => {
     const product = req.body
-    console.log(product)
     const addProduct = await productManager.addProduct(product)
-    console.log(addProduct)
-    res.json({ message: 'Producto agregado con exito', addProduct })
+    res.json({ message: 'Producto agregado con exito',addProduct})
 })
 
 
 productRouter.put('/:idProduct', async(req, res) => {
-    const {idProduct} = req.params
-    const product = req.body
     try {
+        const {idProduct} = req.params
+        const product = req.body
         const updateProduct = await productManager.updateProduct(idProduct, ...product)
         console.log(updateProduct)
         res.json({ message: 'Producto modificado con exito'})
@@ -58,16 +56,11 @@ productRouter.put('/:idProduct', async(req, res) => {
 
 
 productRouter.delete('/:idProduct', async(req, res) => {
-    const {idProduct} = req.params
-    try {
-        const deleteProduct = await productManager.deleteProduct(idProduct)
-        console.log(deleteProduct)
-        res.json({ message: 'Producto eliminado con exito'})
-    } catch (error) {
-        console.log('error')
-        return error
-    }
+        const {idProduct} = req.params
+        const deleteProduct = await productManager.deleteProduct(parseInt(idProduct))
+            res.json({message:'Producto eliminado con exito', deleteProduct})
 })
+
 
 
 
