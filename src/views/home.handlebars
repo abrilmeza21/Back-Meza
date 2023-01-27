@@ -1,0 +1,11 @@
+<h2>Listado completo de productos</h2>
+
+{{#if products.length}}
+{{#each products}}
+<h3>Titulo: <strong>{{title}}</strong></h3>
+<p>Descripción: <strong>{{description}}</strong></p>
+<p>Precio: <strong>{{price}}</strong></p>
+{{/each}}
+{{else}}
+<h2>No hay productos en la lista</h2>
+{{/if}}
